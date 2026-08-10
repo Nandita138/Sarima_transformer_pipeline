@@ -1,0 +1,72 @@
+dataset:  
+  source: "synthetic"
+
+  datetime_aliases:  
+        - "datetime"  
+        - "Date_Time"  
+        - "timestamp"  
+        - "date"  
+        - "Date"  
+        - "time"  
+        - "Datetime"  
+        - "TIMESTAMP"
+
+  target:  
+    name: "active_power"  
+    aliases:  
+            - "Global_active_power"  
+            - "global_active_power"  
+            - "Active_Power"  
+            - "active_power"  
+            - "P"  
+            - "kW"  
+            - "power_kw"  
+            - "load_kw"
+
+  exogenous:  
+    voltage:  
+      aliases:  
+                - "Voltage"  
+                - "voltage"  
+                - "V"  
+                - "voltage_v"  
+                - "volt"  
+    current:  
+      aliases:  
+                - "Global_intensity"  
+                - "current"  
+                - "I"  
+                - "current_a"  
+                - "intensity"  
+    reactive_power:  
+      aliases:  
+                - "Global_reactive_power"  
+                - "reactive_power"  
+                - "Q"  
+                - "kVAR"  
+                - "var"
+
+preprocessing:  
+  resample_freq: "15min"  
+  imputation_method: "interpolate"  
+  scaler_type: "standard"  
+  window_size: 96  
+  horizon: 1  
+  train_ratio: 0.7  
+  val_ratio: 0.15  
+  test_ratio: 0.15  
+  cyclical_features:  
+        - "hour_sin"  
+        - "hour_cos"  
+        - "dow_sin"  
+        - "dow_cos"  
+        - "month_sin"  
+        - "month_cos"
+
+synthetic_data:  
+  num_days: 90  
+  sample_freq: "15min"  
+  base_load_kw: 150.0  
+  noise_std: 5.0  
+  anomaly_ratio: 0.03  
+  num_feeders: 1  
