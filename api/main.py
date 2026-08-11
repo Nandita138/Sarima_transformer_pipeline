@@ -9,7 +9,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field  
 import uvicorn
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))  
+from src.data_loader import GridGuardDataLoader  
+from src.models.transformer_model import TransformerAnomalyDetector
 
 
 class PredictionRequest(BaseModel):  
@@ -35,7 +37,36 @@ app = FastAPI(title="GridGuard API", version="1.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 START_TIME = time.time()  
-STATE = {"loaded": False, "detector": None, "window_size": 96, "predictions": 0}
+STATE = {"loaded": False, "detector": None, "loader": None, "window_size": 96, "predictions": 0}
+
+
+def load_saved_models() -> None:  
+    model_dir = Path("models_saved")  
+    scaler_path = model_dir / "scaler.pkl"  
+    transformer_path = model_dir / "transformer_model.pt"  
+
+    if not scaler_path.exists() or not transformer_path.exists():  
+        missing = [str(p) for p in (scaler_path, transformer_path) if not p.exists()]  
+        raise FileNotFoundError(f"Missing saved model files: {', '.join(missing)}. Run run_pipeline.py first.")  
+
+    loader = GridGuardDataLoader("config/dataset_config.yaml")  
+    loader.load_scaler(str(scaler_path))  
+    detector = TransformerAnomalyDetector("config/model_config.yaml")  
+    detector.load(str(transformer_path), input_dim=len(loader.feature_names))  
+
+    STATE["loader"] = loader  
+    STATE["detector"] = detector  
+    STATE["window_size"] = loader.config.window_size  
+    STATE["loaded"] = True
+
+
+@app.on_event("startup")  
+async def startup_event():  
+    try:  
+        load_saved_models()  
+        print("[GridGuard API] Saved models loaded successfully.")  
+    except Exception as exc:  
+        print(f"[GridGuard API] Failed to load saved models on startup: {exc}")  
 
 
 @app.get("/health", response_model=HealthResponse)  
@@ -50,10 +81,15 @@ async def predict(request: PredictionRequest):
         raise HTTPException(503, "Model not loaded. Run run_pipeline.py first.")  
     start = time.perf_counter()  
     df = pd.DataFrame(request.data)  
-    values = df.values  
+    if df.empty:  
+        raise HTTPException(400, "No input data provided.")  
+    try:  
+        values = STATE["loader"].transform_features(df)  
+    except Exception as exc:  
+        raise HTTPException(400, str(exc))  
     ws = STATE["window_size"]  
     if len(values) < ws:  
-        pad = np.zeros((ws - len(values), values.shape[1]))  
+        pad = np.zeros((ws - len(values), values.shape[1]), dtype=np.float32)  
         values = np.vstack([pad, values])  
     elif len(values) > ws:  
         values = values[-ws:]  

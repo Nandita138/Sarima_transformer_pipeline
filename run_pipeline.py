@@ -28,6 +28,7 @@ def main():
     print("\n[1/6] Loading data...")  
     loader = GridGuardDataLoader(args.config)  
     splits, df_processed = loader.get_full_pipeline(source_override=args.source)  
+    loader.save_scaler("models_saved/scaler.pkl")  
     X_train, y_train, labels_train = splits["train"]  
     X_val, y_val, labels_val = splits["val"]  
     X_test, y_test, labels_test = splits["test"]  
