@@ -91,6 +91,12 @@ if not df.empty:
         X = np.array(X)  
         y = np.array(y)  
         labels = np.array(labels)  
+        scores = detector.predict(X)  
+        score_series = pd.Series(scores, index=df.index[loader.config.window_size:], name="anomaly_score")  
+        predicted_mask = score_series >= threshold  
+        anomaly_index = score_series[predicted_mask].index  
+    except Exception as exc:  
+        st.error(f"Unable to compute model predictions: {exc}")  
         st.stop()
 
     tab1, tab2, tab3 = st.tabs(["Time Series", "Anomaly Detection", "Benchmarks"])
