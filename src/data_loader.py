@@ -2,6 +2,7 @@ import os
 import yaml  
 import numpy as np  
 import pandas as pd  
+import joblib  
 from typing import Optional, Tuple, Dict, List  
 from pathlib import Path  
 from sklearn.preprocessing import StandardScaler, MinMaxScaler  
@@ -294,8 +295,32 @@ class GridGuardDataLoader:
             self.scaler = scaler_cls()  
             df[feature_cols] = self.scaler.fit_transform(df[feature_cols])  
         else:  
+            if self.scaler is None:  
+                raise ValueError("No scaler loaded. Run run_pipeline.py first.")  
             df[feature_cols] = self.scaler.transform(df[feature_cols])  
         return df
+
+    def save_scaler(self, filepath: str = "models_saved/scaler.pkl") -> None:  
+        if self.scaler is None:  
+            raise ValueError("Scaler is not initialized. Normalize data with fit=True before saving.")  
+        Path(filepath).parent.mkdir(parents=True, exist_ok=True)  
+        joblib.dump({"scaler": self.scaler, "feature_names": self.feature_names}, filepath)  
+
+    def load_scaler(self, filepath: str = "models_saved/scaler.pkl") -> None:  
+        if not Path(filepath).exists():  
+            raise FileNotFoundError(f"Scaler file not found: {filepath}. Run run_pipeline.py first.")  
+        data = joblib.load(filepath)  
+        self.scaler = data.get("scaler")  
+        self.feature_names = data.get("feature_names", [])  
+
+    def transform_features(self, df: pd.DataFrame) -> np.ndarray:  
+        if self.scaler is None or not self.feature_names:  
+            raise ValueError("Scaler and feature names not loaded. Run run_pipeline.py first.")  
+        missing = [c for c in self.feature_names if c not in df.columns]  
+        if missing:  
+            raise ValueError(f"Missing required feature columns: {missing}")  
+        values = df[self.feature_names].astype(float).values  
+        return self.scaler.transform(values)  
 
     def create_windows(self, df: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:  
         feature_cols = [c for c in df.columns if c != "anomaly_label"]  
