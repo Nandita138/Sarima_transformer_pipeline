@@ -1,0 +1,46 @@
+{
+  "GridGuard Hybrid": {
+    "precision": 0.5940959409594095,
+    "recall": 0.5244299674267101,
+    "f1_score": 0.5570934256055363,
+    "roc_auc": 0.7636381859183163,
+    "avg_precision": 0.6169907218395401,
+    "true_positives": 161,
+    "false_positives": 110,
+    "false_alarm_rate": 0.11282051281935569,
+    "latency_ms": 2.437649993225932
+  },
+  "Standalone Transformer": {
+    "precision": 0.24778761061946902,
+    "recall": 0.9120521172638436,
+    "f1_score": 0.38970076548364646,
+    "roc_auc": 0.544842562432139,
+    "avg_precision": 0.2586832370735721,
+    "true_positives": 280,
+    "false_positives": 850,
+    "false_alarm_rate": 0.8717948717859303,
+    "latency_ms": 2.1182799828238785
+  },
+  "Isolation Forest": {
+    "precision": 0.25,
+    "recall": 0.7231270358306189,
+    "f1_score": 0.37154811715481173,
+    "roc_auc": 0.48415935855675274,
+    "avg_precision": 0.22007872454477284,
+    "true_positives": 222,
+    "false_positives": 666,
+    "false_alarm_rate": 0.6830769230699172,
+    "latency_ms": 0.0
+  },
+  "SARIMA Only": {
+    "precision": 0.6785714285714286,
+    "recall": 0.06188925081433225,
+    "f1_score": 0.11343283582089553,
+    "roc_auc": 0.49631003090286474,
+    "avg_precision": 0.34331433288447344,
+    "true_positives": 19,
+    "false_positives": 9,
+    "false_alarm_rate": 0.009230769230674556,
+    "latency_ms": 0.0
+  }
+}

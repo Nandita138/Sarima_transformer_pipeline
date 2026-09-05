@@ -1,34 +1,35 @@
-sarima:  
-  order: [1, 1, 1]  
-  seasonal_order: [0, 0, 0, 0]  
-  auto_arima: false 
-  max_p: 1
-  max_q: 1
-  seasonal: false
+sarima:
+  order: [1, 1, 1]
+  seasonal_order: [1, 0, 0, 24]
+  auto_arima: false
+  max_p: 2
+  max_q: 2
+  seasonal: true
   m: 24
-  stepwise: true  
+  stepwise: true
   suppress_warnings: true
 
-transformer:  
-  d_model: 64  
-  nhead: 4  
-  num_encoder_layers: 3  
-  dim_feedforward: 256  
-  dropout: 0.1  
-  activation: "gelu"  
-  batch_size: 64  
-  learning_rate: 0.001  
-  epochs: 50  
-  patience: 10  
+transformer:
+  d_model: 64
+  nhead: 4
+  num_encoder_layers: 3
+  dim_feedforward: 256
+  dropout: 0.1
+  activation: "gelu"
+  batch_size: 64
+  learning_rate: 0.001
+  epochs: 30
+  patience: 7
   anomaly_threshold: 0.5
 
-isolation_forest:  
-  n_estimators: 200  
-  contamination: 0.03  
-  max_samples: "auto"  
+isolation_forest:
+  n_estimators: 200
+  contamination: 0.03
+  max_samples: "auto"
   random_state: 42
 
-shap:  
-  explainer_type: "kernel"  
-  num_background_samples: 100  
-  max_display_features: 10  
+shap:
+  explainer_type: "kernel"
+  num_background_samples: 50
+  max_display_features: 10
+
