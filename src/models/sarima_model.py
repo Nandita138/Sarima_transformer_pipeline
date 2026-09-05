@@ -68,13 +68,16 @@ class SARIMAModel:
 
     def _fit_manual(self, series: pd.Series):
         from statsmodels.tsa.statespace.sarimax import SARIMAX
+        order = tuple(self.config.get("order", [1, 1, 0]))
+        seasonal_order = tuple(self.config.get("seasonal_order", [1, 0, 0, 24]))
         model = SARIMAX(
             series,
-            order=(1, 1, 0),
+            order=order,
+            seasonal_order=seasonal_order,
             enforce_stationarity=False,
             enforce_invertibility=False
         )
-        self.fitted_model = model.fit(disp=False, maxiter=20)
+        self.fitted_model = model.fit(disp=False, maxiter=30)
         self.model = model
 
     def predict(self, steps: int) -> np.ndarray:
@@ -95,33 +98,15 @@ class SARIMAModel:
                 raise ValueError("No residuals available.")
             return self.residuals
 
-        if self.fitted_model is None:
-            # Fallback if unfitted: difference from median daily pattern
-            m = self.config.get("m", 24)
-            arr = series.values
-            if len(arr) >= m:
-                unfolded = arr[:len(arr) - (len(arr) % m)].reshape(-1, m)
-                baseline = np.tile(np.median(unfolded, axis=0), len(arr) // m + 1)[:len(arr)]
-                return arr - baseline
-            return arr - np.mean(arr)
-
-        # Fast statsmodels filter applying trained parameters to new series
-        try:
-            if hasattr(self.fitted_model, "apply"):
-                new_results = self.fitted_model.apply(series)
-                return np.nan_to_num(np.asarray(new_results.resid), nan=0.0)
-            elif hasattr(self.fitted_model, "arima_res_") and hasattr(self.fitted_model.arima_res_, "apply"):
-                new_results = self.fitted_model.arima_res_.apply(series)
-                return np.nan_to_num(np.asarray(new_results.resid), nan=0.0)
-        except Exception:
-            pass
-
-        # Robust seasonal baseline difference fallback
         m = self.config.get("m", 24)
         arr = series.values
         if len(arr) >= m:
-            baseline = pd.Series(arr).rolling(window=m, min_periods=1).mean().values
+            # Fast seasonal baseline difference (subtracting 24-step seasonal component)
+            seasonal_lag = pd.Series(arr).shift(m).bfill().values
+            trend_component = pd.Series(arr).rolling(window=m, min_periods=1).mean().values
+            baseline = 0.5 * (seasonal_lag + trend_component)
             return arr - baseline
+
         return arr - np.mean(arr)
 
     def compute_anomaly_scores(self, residuals=None, threshold_std=3.0) -> Tuple[np.ndarray, np.ndarray]:
@@ -137,8 +122,13 @@ class SARIMAModel:
 
     def save(self, filepath: str = "models_saved/sarima_model.pkl"):
         Path(filepath).parent.mkdir(parents=True, exist_ok=True)
+        if self.fitted_model is not None and hasattr(self.fitted_model, "remove_data"):
+            try:
+                self.fitted_model.remove_data()
+            except Exception:
+                pass
         joblib.dump(self.fitted_model, filepath)
-        print(f"[SARIMA] Model saved to {filepath}")
+        print(f"[SARIMA] Lightweight model saved to {filepath}")
 
     def load(self, filepath: str = "models_saved/sarima_model.pkl"):
         if Path(filepath).exists():

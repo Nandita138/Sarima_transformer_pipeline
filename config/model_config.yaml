@@ -23,13 +23,13 @@ transformer:
   anomaly_threshold: 0.5
 
 isolation_forest:
-  n_estimators: 200
+  n_estimators: 50
   contamination: 0.03
-  max_samples: "auto"
+  max_samples: 256
   random_state: 42
 
 shap:
-  explainer_type: "kernel"
-  num_background_samples: 50
+  explainer_type: "gradient"
+  num_background_samples: 30
   max_display_features: 10
 
