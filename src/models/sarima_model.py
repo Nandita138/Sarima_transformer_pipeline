@@ -98,10 +98,22 @@ class SARIMAModel:
                 raise ValueError("No residuals available.")
             return self.residuals
 
+        # 1. Primary path: Use fitted SARIMAX / pmdarima state-space filter model
+        if self.fitted_model is not None:
+            try:
+                if hasattr(self.fitted_model, "apply"):
+                    applied = self.fitted_model.apply(series)
+                    return np.asarray(applied.resid)
+                elif hasattr(self.fitted_model, "arima_res_") and hasattr(self.fitted_model.arima_res_, "apply"):
+                    applied = self.fitted_model.arima_res_.apply(series)
+                    return np.asarray(applied.resid)
+            except Exception as e:
+                print(f"[SARIMA] Notice: fitted_model.apply() failed ({e}), falling back to seasonal heuristic.")
+
+        # 2. Fallback path: Heuristic seasonal difference calculation
         m = self.config.get("m", 24)
         arr = series.values
         if len(arr) >= m:
-            # Fast seasonal baseline difference (subtracting 24-step seasonal component)
             seasonal_lag = pd.Series(arr).shift(m).bfill().values
             trend_component = pd.Series(arr).rolling(window=m, min_periods=1).mean().values
             baseline = 0.5 * (seasonal_lag + trend_component)
