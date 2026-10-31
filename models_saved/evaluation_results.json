@@ -1,25 +1,25 @@
 {
   "GridGuard Hybrid": {
-    "precision": 0.6357142857142857,
-    "recall": 0.5798045602605864,
-    "f1_score": 0.606473594548552,
-    "roc_auc": 0.7508560928756368,
-    "avg_precision": 0.649034842089389,
-    "true_positives": 178,
-    "false_positives": 102,
-    "false_alarm_rate": 0.10461538461431164,
-    "latency_ms": 4.846929991617799
+    "precision": 0.6819787985865724,
+    "recall": 0.6286644951140065,
+    "f1_score": 0.6542372881355932,
+    "roc_auc": 0.816303349202372,
+    "avg_precision": 0.6497925795516137,
+    "true_positives": 193,
+    "false_positives": 90,
+    "false_alarm_rate": 0.09230769230674556,
+    "latency_ms": 2.660890109837055
   },
   "Standalone Transformer": {
-    "precision": 0.3879310344827586,
-    "recall": 0.2931596091205212,
-    "f1_score": 0.3339517625231911,
-    "roc_auc": 0.5034494278793953,
-    "avg_precision": 0.28400290787320415,
-    "true_positives": 90,
-    "false_positives": 142,
-    "false_alarm_rate": 0.14564102563953188,
-    "latency_ms": 4.437280015554279
+    "precision": 0.26814814814814814,
+    "recall": 0.5895765472312704,
+    "f1_score": 0.36863543788187375,
+    "roc_auc": 0.5097753278209304,
+    "avg_precision": 0.3046899452206672,
+    "true_positives": 181,
+    "false_positives": 494,
+    "false_alarm_rate": 0.5066666666614701,
+    "latency_ms": 3.9247196167707443
   },
   "Isolation Forest": {
     "precision": 0.25452196382428943,
